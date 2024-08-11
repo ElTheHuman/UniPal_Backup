@@ -1,6 +1,6 @@
-# UniPal
+# UniPal Backup
 
-UniPal is a web application that uses AI to help students to find relevant information about universities in Indonesi (currently only available for Binus University). UniPal is built using React.js, and Google Cloud APIs. The APIs used in this project are Google Cloud Generative AI API, Google Cloud Speech-to-Text API, and Google Cloud Text-to-Speech API. In this project, we use the Generative AI API to generate a summary of the information about the university, the Speech-to-Text API to convert the user's speech into text, and the Text-to-Speech API to convert the generated summary into speech. In the future, we plan to add more universities to the application and add more features to the application.
+UniPal is a web application that uses AI to help students to find relevant information about universities in Indonesi (currently only available for Binus University). UniPal is built using React.js, and Google Cloud APIs. The APIs used in this project are Google Cloud Generative AI API, Google Cloud Speech-to-Text API, and Google Cloud Text-to-Speech API. In this project, we use the Generative AI API to generate a summary of the information about the university, the Speech-to-Text API to convert the user's speech into text, and the Text-to-Speech API to convert the generated summary into speech. In the future, we plan to add more universities to the application and add more features to the application. THIS REPOSITORY IS USED AS THE BACKUP FOR THE ORIGINAL REPO AT https://github.com/GilbertKrantz/UniPal
 
 ## How to run the project
 1. Clone the repository
