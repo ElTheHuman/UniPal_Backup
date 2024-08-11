@@ -3,6 +3,9 @@ import './Register.css';
 import PasswordChecklist from "react-password-checklist";
 import { useNavigate } from "react-router-dom";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 
 // Firebase SDK
 import { auth, db, storage } from "../../Firebase"
@@ -15,16 +18,18 @@ import { setDoc, doc } from "firebase/firestore";
 // Firebase Storage SDK
 import { ref, uploadBytes } from "firebase/storage";
 
+
 const validateName = (name) => {
     // if name is empty, have a number, length of name is longer than 20 or have a special character apart from space, return false
     if (name === "") {
-        return "No Name";
-    } else if (name.match(/\d+/g) || name.match(/[^a-zA-Z0-9 ]/g) || name.length > 20) {
-        return "Invalid Name";
+        return "Tidak ada nama";
+    } else if (name.match(/\d+/g) || name.match(/[^a-zA-Z0-9 ]/g)) {
+        return "Nama tidak valid";
+    } else if (name.length > 20) {
+        return "Nama tidak boleh lebih dari 20 karakter"
     }
     return true;
 }
-
 
 const Register = () => {
 
@@ -38,8 +43,48 @@ const Register = () => {
     const navigateTo = useNavigate();
     const signIn = useSignIn();
 
+    const toggleCheck = (value) => {
+        if (gender === value) {
+            setGender(null);
+        } else {
+            setGender(value);
+        }
+    }
+
+    // Show password function
+    const [passwordType, setPasswordType] = useState('password');
+    const [passwordIcon, setPasswordIcon] = useState(faEyeSlash);
+
+    const handleShowPassword = () => {
+        if (passwordType === 'password') {
+            setPasswordIcon(faEye);
+            setPasswordType('text');
+        } else {
+            setPasswordIcon(faEyeSlash);
+            setPasswordType('password');
+        }
+    }
+
+    // Show confirm password function
+    const [confirmPasswordType, setConfirmPasswordType] = useState('password');
+    const [confirmPasswordIcon, setConfirmPasswordIcon] = useState(faEyeSlash);
+
+    const handleShowConfirmPassword = () => {
+        if (confirmPasswordType === 'password') {
+            setConfirmPasswordIcon(faEye);
+            setConfirmPasswordType('text');
+        } else {
+            setConfirmPasswordIcon(faEyeSlash);
+            setConfirmPasswordType('password');
+        }
+    }
+
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        if (validateName(name) !== true || password === '' || !password.match(/\d+/g) || password.localeCompare(confirmPassword) || !isValidPassword) {
+            return;
+        }
 
         try {
             await createUserWithEmailAndPassword(auth, email, password)
@@ -99,7 +144,7 @@ const Register = () => {
                 {error && <p className="register__error">{error}</p>}
                 <form onSubmit={handleRegister} className="register__form">
                     <div className="register__input-container">
-                        <label htmlFor="name" className="register__input-label">Nama</label>
+                        <label htmlFor="name" className="register__input-label">Nama<span className="Required-Input">*</span></label>
                         <input
                             autoComplete="off"
                             type="text"
@@ -109,29 +154,23 @@ const Register = () => {
                             onChange={(e) => setName(e.target.value)}
                             required
                         />
-                        {/* Error if name isn't valid */}
-                       {validateName(name) !== true && <p className="register__error">{validateName(name)}</p>}
-
+                        {validateName(name) !== true && <div className="register__error">{validateName(name)}</div>}
                     </div>
                     <div className="register__input-container">
                         <label htmlFor="gender" className="register__input-label">Gender</label>
                         <div className="register__input-gender-container">
                             <div className="register__gender-choice">
-                                <input type="radio" id="male" name="gender" className="register__input-gender" value="Male" onChange={(e) => setGender(e.target.value)}  />
+                                <input type="radio" id="male" name="gender" className="register__input-gender" value="Male" checked={gender === 'Male'} onClick={(e) => toggleCheck(e.target.value)} onChange={(e) => setGender(e.target.value)}  />
                                 <label htmlFor="male" className="register__gender-label">Pria</label>
                             </div>
                             <div className="register__gender-choice">
-                                <input type="radio" id="female" name="gender" className="register__input-gender" value="Female" onChange={(e) => setGender(e.target.value)} />
+                                <input type="radio" id="female" name="gender" className="register__input-gender" value="Female" checked={gender === 'Female'} onClick={(e) => toggleCheck(e.target.value)} onChange={(e) => setGender(e.target.value)} />
                                 <label htmlFor="female" className="register__gender-label">Wanita</label>
-                            </div>
-                            <div className="register__gender-choice">
-                                <input type="radio" id="others" name="gender" className="register__input-gender" value="Others" onChange={(e) => setGender(e.target.value)} />
-                                <label htmlFor="others" className="register__gender-label">Lainnya</label>
                             </div>
                         </div>
                     </div>
                     <div className="register__input-container">
-                        <label htmlFor="email" className="register__input-label">Alamat Email</label>
+                        <label htmlFor="email" className="register__input-label">Alamat Email<span className="Required-Input">*</span></label>
                         <input
                             type="email"
                             id="email"
@@ -142,26 +181,32 @@ const Register = () => {
                         />
                     </div>
                     <div className="register__input-container">
-                        <label htmlFor="password" className="register__input-label">Kata Sandi</label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="register__input"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <label htmlFor="password" className="register__input-label">Kata Sandi<span className="Required-Input">*</span></label>
+                        <div className="Showable-Password">
+                            <input
+                                type={passwordType}
+                                id="password"
+                                className="register__input Password-Spacer"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <span className="Show-Password" onClick={handleShowPassword}><FontAwesomeIcon icon={passwordIcon}/></span>
+                        </div>
                     </div>
                     <div className="register__input-container">
-                        <label htmlFor="confirmPassword" className="register__input-label">Konfirmasi Kata Sandi</label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            className="register__input"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
+                        <label htmlFor="confirmPassword" className="register__input-label">Konfirmasi Kata Sandi<span className="Required-Input">*</span></label>
+                        <div className="Showable-Password">
+                            <input
+                                type={confirmPasswordType}
+                                id="confirmPassword"
+                                className="register__input Password-Spacer"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                            <span className="Show-Password" onClick={handleShowConfirmPassword}><FontAwesomeIcon icon={confirmPasswordIcon}/></span>
+                        </div>
                     </div>
                     <PasswordChecklist
                         rules={["minLength", "number", "match"]}
@@ -170,17 +215,17 @@ const Register = () => {
                         valueAgain={confirmPassword}
                         onChange={(isValid) => { setIsValidPassword(isValid) }}
                         messages={{
-                            minLength: "Kata sandi lebih panjang dari 8 karakter.",
+                            minLength: "Kata sandi minimal 8 karakter.",
                             // specialChar: "Kata sandi memiliki karakter khusus.",
-                            number: "Kata sandi terdiri dari angka.",
+                            number: "Kata sandi mengandung angka.",
                             // capital: "Kata sandi menggunakan huruf kapital.",
-                            match: "Kata sandi cocok.",
+                            match: "Konfirmasi kata sandi cocok.",
                         }}
                         className="register__password-check"
                     />
                     <button type='submit' className="register__submit-button">Daftar</button>
                     {/* <button type='submit' className="register__submit-button" disabled={false}>Daftar</button> */}
-                    <p className="register__signin">Sudah memiliki akun? <a href="/signin" className="register__signin-link">Masuk</a></p>
+                    <p className="register__signin">Sudah memiliki akun? <Link to={'/signin'} className="register__signin-link">Masuk</Link></p>
                 </form>
                 {/* <button className="register__submit-button"><span style={{color:"red"}} onClick={deleteAllData}>DELETE ALL</span></button> */}
             </div>

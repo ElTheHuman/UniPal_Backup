@@ -9,6 +9,8 @@ import { auth, db, storage } from "../../Firebase"
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const EditUserData = ({ onBack }) => {
 
@@ -21,10 +23,13 @@ const EditUserData = ({ onBack }) => {
     const validateName = (name) => {
         // if name is empty, have a number, length of name is longer than 20 or have a special character apart from space, return false
         if (name === "") {
-            setError("No Name");
-            return false
-        } else if (name.match(/\d+/g) || name.match(/[^a-zA-Z0-9 ]/g) || name.length > 20) {
-            setError("Invalid Name");
+            setError("Tidak ada nama");
+            return false;
+        } else if (name.match(/\d+/g) || name.match(/[^a-zA-Z0-9 ]/g)) {
+            setError("Nama tidak valid");
+            return false;
+        } else if (name.length > 20) {
+            setError("Nama tidak boleh lebih dari 20 karakter");
             return false;
         }
         return true;
@@ -67,6 +72,19 @@ const EditUserData = ({ onBack }) => {
         setFileName(file.name);
 
       };
+
+    const [passwordType, setPasswordType] = useState('password');
+    const [passwordIcon, setPasswordIcon] = useState(faEyeSlash);
+
+    const handleShowPassword = () => {
+        if (passwordType === 'password') {
+            setPasswordIcon(faEye);
+            setPasswordType('text');
+        } else {
+            setPasswordIcon(faEyeSlash);
+            setPasswordType('password');
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -119,21 +137,24 @@ const EditUserData = ({ onBack }) => {
                 <div className={"EditUserData__container--inner--content"}>
                     {error && <div className={"EditUserData__error-message"}>{error}</div>}
                     <form className={"EditUserData__form"} onSubmit={handleSubmit}>
-                        <div className={"EditUserData__input"}>
+                        <div className={"EditUserData__input-container"}>
                             <label htmlFor="username" className={"EditUserData__input-label"}>Nama:</label>
-                            <input type="text" id="username" name="username" placeholder="Nama" autoComplete='off' defaultValue={userProfile['username']}/>
+                            <input type="text" id="username" name="username" placeholder="Nama" autoComplete='off' defaultValue={userProfile['username']}  className='EditUserData__input'/>
                         </div>
-                        <div className={"EditUserData__input"}>
+                        <div className={"EditUserData__input-container"}>
                             <label htmlFor="profilePicture" className={"EditUserData__input-label"}>Foto Profil:</label>
                             <div className={"EditUserData__input-file-container"}>
                                 <button className={"EditUserData__input-file-button"} onClick={handleFileButtonClick}>Pilih file</button>
                                 <label htmlFor="profilePicture" className={"EditUserData__input-file"}>{fileName}</label>
-                                <input type="file" id="profilePicture" name="profilePicture" ref={fileInputRef} onChange={handleFileChange}/>
+                                <input type="file" id="profilePicture" name="profilePicture" ref={fileInputRef} onChange={handleFileChange} className='EditUserData__input'/>
                             </div>
                         </div>
-                        <div className={"EditUserData__input"}>
-                            <label htmlFor="password" className={"EditUserData__input-label"}>Kata Sandi:</label>
-                            <input type="password" id="password" name="password" placeholder="Kata Sandi" />
+                        <div className={"EditUserData__input-password-container"}>
+                            <label htmlFor="password" className={"EditUserData__input-label"}>Masukkan kata sandi untuk menyimpan perubahan</label>
+                            <div className='Showable-Password'>
+                                <input type={passwordType} id="password" name="password" placeholder="Kata Sandi" className='EditUserData__input-password Password-Spacer'/>
+                                <span className="Show-Password" onClick={handleShowPassword}><FontAwesomeIcon icon={passwordIcon}/></span>
+                            </div>
                         </div>
                         <button type="submit" className={"EditUserData__submit-button"}>Simpan Perubahan</button>
                         <Link to={'/change-password'} className='EditUserData__change-password'>Ganti kata sandi</Link>
